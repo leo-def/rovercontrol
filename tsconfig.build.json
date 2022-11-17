@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    // 👇️ this may vary depending on how you
+    // name your test files
+    "exclude": [
+        "test",
+        "build",
+        "coverage",
+        "node_modules",
+        "babel.config.js",
+        "jest.config.ts"
+      // "src/**/*.spec.ts",
+      // "src/**/*.test.ts"
+    ]
+  }
