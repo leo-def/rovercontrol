@@ -3,7 +3,7 @@ import { getMoveCommandFromString, MoveCommand } from "../enums/MoveCommand";
 import { Area } from "../models/Area";
 import { Position } from "../models/Position";
 import { Rover } from "../models/Rover";
-import { RoverControlService } from "../services/RoverControlService";
+import { RoverControlService } from "../service/RoverControlService";
 
 export class ConsoleController {
     private static instance = new ConsoleController();

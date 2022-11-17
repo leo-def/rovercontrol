@@ -1,6 +1,6 @@
 
 import fs from "fs";
-import { ConsoleController } from "./controllers/ConsoleController";
+import { ConsoleController } from "./controller/ConsoleController";
 const filePath = process.argv[process.argv.length -1];
 if(!fs.existsSync(filePath)) {
     throw new Error('File not found')
