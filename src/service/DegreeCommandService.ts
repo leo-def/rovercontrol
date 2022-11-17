@@ -11,12 +11,11 @@ export class DegreeCommandService {
     static getInstance(): DegreeCommandService {
         return DegreeCommandService.instance;
     }
-    private constructor(){
+    private constructor() {
     }
-    
+
     getConfig() {
         return defaultConfig;
     }
 
 }
-

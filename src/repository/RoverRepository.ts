@@ -4,13 +4,12 @@ import { Rover } from "../models/Rover";
 export class RoverRepository {
 
     private static instance: RoverRepository = new RoverRepository();
-    
 
     static getInstance() {
         return RoverRepository.instance;
     }
 
-    
+
     static reset() {
         return RoverRepository.instance = new RoverRepository();;
     }
@@ -19,7 +18,7 @@ export class RoverRepository {
 
     private area?: Area;
 
-    private constructor(){}
+    private constructor() { }
 
     getCurrId(): string {
         return (this.rovers.length + 1).toString();

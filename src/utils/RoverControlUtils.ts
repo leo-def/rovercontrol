@@ -15,9 +15,9 @@ export class RoverControlUtils {
         return rover;
     }
 
-    static calculatePosition(rover: Rover, command: MoveCommand, config: any): Position  {
+    static calculatePosition(rover: Rover, command: MoveCommand, config: any): Position {
         const position = new Position(rover.position.x, rover.position.y);
-        if(command !== MoveCommand.M) {
+        if (command !== MoveCommand.M) {
             return position;
         }
         const direction = rover.direction;
@@ -27,16 +27,14 @@ export class RoverControlUtils {
         return position;
     }
 
-    static calculateDirection(rover: Rover, command: MoveCommand, config: any): number  {
+    static calculateDirection(rover: Rover, command: MoveCommand, config: any): number {
         let direction = rover.direction;
-        if(command === MoveCommand.M) {
+        if (command === MoveCommand.M) {
             return direction;
         }
         const turn = config[MoveCommand[command]] || 0;
         direction = AxisDegreeUtils.calcDegree(direction, turn);
         return direction;
     }
-
-
 
 }

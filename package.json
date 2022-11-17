@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "npx nodemon ./src/index.ts'",
     "start:console": "npx ts-node ./src/console.ts",
     "test": "jest",
     "build": "tsc --project tsconfig.build.json"

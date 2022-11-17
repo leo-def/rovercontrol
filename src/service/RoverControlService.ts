@@ -11,7 +11,7 @@ export class RoverControlService {
     static getInstance(): RoverControlService {
         return RoverControlService.instance;
     }
-    private constructor(){
+    private constructor() {
     }
 
     degreeCommandService: DegreeCommandService = DegreeCommandService.getInstance();
