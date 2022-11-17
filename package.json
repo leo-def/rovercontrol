@@ -1,13 +1,14 @@
 {
   "name": "rovercontrol",
   "version": "1.0.0",
-  "description": "",
+  "description": "Rover control system",
   "main": "index.js",
   "scripts": {
     "start:console": "npx ts-node ./src/console.ts",
     "test": "jest",
     "build": "tsc --project tsconfig.build.json"
   },
+  "homepage": "https://github.com/leo-def/rovercontrol#readme",
   "author": "Leonardo de Freitas Oliveira <leodefoliveira@gmail.com>",
   "license": "ISC",
   "devDependencies": {
