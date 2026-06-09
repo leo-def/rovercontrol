@@ -1,226 +1,151 @@
 # RoverControl - Technical Specification
 
-> Technical specification for the Mars Rover Navigation CLI Application.
-> Reference for understanding rover control and navigation algorithms.
+> TypeScript Mars rover simulator implementing command parsing and degree-based movement.
+> Demonstrates OOP patterns, singleton services, and CLI-driven input processing.
 
 ## Executive Summary
 
-- **Project**: RoverControl
-- **Type**: Command-line rover navigation system
-- **Language**: TypeScript/JavaScript (Node.js 16+)
-- **Status**: Active Development
-- **Owner**: Development team
+RoverControl is a **TypeScript + Node.js CLI** application simulating NASA-style Mars rover commands. Given a grid size and initial rover positions, it processes sequences of `L` (turn left), `R` (turn right), and `M` (move forward) commands using degree-based direction math. Results are written to stdout. It uses a singleton pattern throughout and separates concerns across models, services, repositories, utilities, and a console controller.
 
 ---
 
 ## 1. Problem Statement
 
 ### Context
-RoverControl is a NASA Mars rover control system that processes rover commands and manages navigation on a rectangular plateau. Rovers receive commands (L=left, R=right, M=move) and report their position and heading.
+Classic software engineering kata: given a plateau grid and one or more rovers with initial positions and command sequences, simulate the final position of each rover.
 
 ### Goals
-- **Primary**: Implement rover control with coordinate system and heading management
-- **Secondary**: Support multiple rovers operating independently
-- **Tertiary**: Provide clear command processing with error handling
+- Parse input file defining grid dimensions and rover instructions
+- Execute `L`/`R`/`M` command sequences per rover
+- Use degree-based math (0°=N, 90°=E, 180°=S, 270°=W) for rotation and movement
+- Output final position and direction for each rover
 
 ### Success Metrics
-- [x] Process rover commands (L, R, M)
-- [x] Track position (x, y) and heading (N, S, E, W)
-- [x] Validate plateau boundaries
-- [x] Support multiple rovers
-- [x] Handle command sequences
-- [ ] Performance: <100ms per 1000 commands
-- [ ] 100% command accuracy
+- [x] Command parsing (L/R/M)
+- [x] Degree-based cardinal direction calculation
+- [x] Multiple rovers supported
+- [x] Singleton service pattern
+- [x] Jest test suite
+- [ ] Bounds checking (rover stays within plateau)
+- [ ] Input validation for invalid commands
 
 ---
 
 ## 2. Technology Stack
 
-| Component | Technology | Version | Rationale |
-|-----------|-----------|---------|-----------|
-| Runtime | Node.js | 16.0+ | JavaScript execution |
-| Language | TypeScript | 4.5+ | Type safety |
-| Package Manager | npm/yarn | Latest | Dependency management |
-| Build | tsc (TypeScript Compiler) | 4.5+ | Transpile to JavaScript |
-| Testing | Jest | 27.0+ | Testing framework |
-
-### Key Dependencies
-- `typescript`: Language and compiler
-- `jest`: Testing framework (dev dependency)
-- No production dependencies needed
+| Component | Technology | Version |
+|-----------|-----------|---------|
+| Language | TypeScript | 5.x |
+| Runtime | Node.js | Latest |
+| Testing | Jest | Latest |
+| Build | tsc | 5.x |
+| Dev | nodemon | Latest |
 
 ---
 
 ## 3. Architecture
 
-### Rover Navigation System
-
 ```
-┌─────────────────────────────────────────┐
-│       Command Parser (CLI Input)        │
-│  "MMRMMRMRRM" → [M, M, R, M, M, R, ...]│
-└────────────────────┬────────────────────┘
-                     │
-┌────────────────────▼────────────────────┐
-│     Rover Control Logic                 │
-│  (Position tracking, heading mgmt)      │
-└────────────────────┬────────────────────┘
-                     │
-         ┌───────────┼───────────┐
-         │           │           │
-         ▼           ▼           ▼
-    ┌────────┐  ┌────────┐  ┌────────┐
-    │ Rover1 │  │ Rover2 │  │ RoverN │
-    │(x,y,H) │  │(x,y,H) │  │(x,y,H) │
-    └────────┘  └────────┘  └────────┘
-         │           │           │
-         └───────────┼───────────┘
-                     │
-┌────────────────────▼────────────────────┐
-│       Output: Final Positions           │
-│  1 3 N                                  │
-│  5 1 E                                  │
-│  5 2 N                                  │
-└─────────────────────────────────────────┘
-```
-
-### Coordinate System
-
-```
-5 · · · · ·
-4 · · · · ·
-3 · · · · ·
-2 · · · · ·
-1 · · · · ·
-0 · · · · ·
-  0 1 2 3 4 5
-
-Position: (1, 2, N)
-- X: 1, Y: 2, Heading: North (N)
-
-Headings: N (North), E (East), S (South), W (West)
-L = Turn Left 90°
-R = Turn Right 90°
-M = Move Forward 1 grid point
+Input File (txt)
+    ↓
+ConsoleController (reads file, orchestrates)
+    ↓
+RoverControlService (main orchestrator — Singleton)
+    ├── DegreeCommandService (maps L/R/M to degree offsets)
+    ├── RoverRepository (stores rover state — Singleton)
+    └── AxisDegreeUtils (trig-based axis movement calculation)
+         ↑
+    DegreeCardinalDirection enum (0=N, 90=E, 180=S, 270=W)
 ```
 
 ---
 
-## 4. Project Structure
+## 4. Module Structure
 
 ```
-rovercontrol/
-├── src/
-│   ├── index.ts                  # Entry point / CLI
-│   ├── models/
-│   │   ├── Rover.ts             # Rover class
-│   │   ├── Position.ts          # Position/heading
-│   │   └── Plateau.ts           # Navigation bounds
-│   ├── services/
-│   │   ├── RoverController.ts   # Control logic
-│   │   ├── CommandParser.ts     # Parse input
-│   │   └── NavigationService.ts # Movement logic
-│   └── utils/
-│       ├── logger.ts
-│       └── validators.ts
-├── test/
-│   ├── rover.test.ts
-│   ├── navigation.test.ts
-│   └── integration.test.ts
-├── build/
-│   └── (compiled JavaScript)
-├── tsconfig.json
-├── jest.config.js
-├── package.json
-└── README.md
+src/
+  console.ts                    # Entry point — reads input, calls ConsoleController
+  controller/
+    ConsoleController.ts        # Parses input, initializes rovers, runs commands
+  service/
+    DegreeCommandService.ts     # Singleton: maps commands to degree deltas (L=-90, R=+90, M=0)
+    RoverControlService.ts      # Singleton: executes command sequences on rovers
+  models/
+    Area.ts                     # Grid dimensions (maxX, maxY)
+    Position.ts                 # x, y, direction (degrees)
+    Rover.ts                    # Rover state (id, position)
+  repository/
+    RoverRepository.ts          # Singleton: stores all rover states
+  utils/
+    AxisDegreeUtils.ts          # calculateAxis, calcDegree, convertToDegree
+    RoverControlUtils.ts        # Utility helpers
+  enums/
+    DegreeCardinalDirection.ts  # NORTH=0, EAST=90, SOUTH=180, WEST=270
+    MoveCommand.ts              # L, R, M
 ```
 
 ---
 
-## 5. Core Components
-
-### Rover Class
+## 5. Core Logic — Movement Algorithm
 
 ```typescript
-class Rover {
-  x: number;
-  y: number;
-  heading: 'N' | 'S' | 'E' | 'W';
-  plateau: Plateau;
+// DegreeCommandService
+L → currentDegree - 90   (turn left)
+R → currentDegree + 90   (turn right)
+M → currentDegree + 0    (no rotation, move forward)
 
-  moveForward(): void { ... }
-  turnLeft(): void { ... }
-  turnRight(): void { ... }
-  processCommands(commands: string[]): void { ... }
-  getPosition(): string { ... } // "x y heading"
-}
-```
-
-### Heading Transitions
-
-```
-        N
-        |
-    W---+---E
-        |
-        S
-
-N → R → E → R → S → R → W → R → N
-N → L → W → L → S → L → E → L → N
-```
-
-### Movement Logic
-
-```typescript
-moveForward(x, y, heading) {
-  switch (heading) {
-    case 'N': return (x, y + 1);
-    case 'S': return (x, y - 1);
-    case 'E': return (x + 1, y);
-    case 'W': return (x - 1, y);
-  }
-}
+// AxisDegreeUtils.calculateAxis(value, direction, axisDirection)
+// Returns movement on a single axis given facing direction
+// Uses: axisSideDistance = |direction - axisDirection| / 90
+// If sideDistance > 90, flip axis reference and negate
+// Result: partial axis movement (0 if perpendicular, full if parallel)
 ```
 
 ---
 
-## 6. Input/Output Format
+## 6. Input Format
 
-### Input
 ```
-5 5           // Plateau dimensions (5x5 grid)
-1 2 N         // Rover 1 initial position
-LMLMLMLMM     // Rover 1 commands
-3 3 E         // Rover 2 initial position
-MMRMMRMRRM    // Rover 2 commands
-```
-
-### Output
-```
-1 3 N
-5 1 E
+5 5               ← Plateau max X Y
+1 2 N             ← Rover 1 initial position and facing
+LMLMLMLMM         ← Rover 1 commands
+3 3 E             ← Rover 2 initial position
+MMRMMRMRRM        ← Rover 2 commands
 ```
 
 ---
 
-## 7. Command Processing
+## 7. Testing Strategy
 
-### Command Sequence Example
-
-```
-Rover: 1 2 N
-Commands: LMLMLMLMM
-
-Step 1: L (turn left)  → 1 2 W
-Step 2: M (move)      → 0 2 W
-Step 3: L (turn left) → 0 2 S
-Step 4: M (move)      → 0 1 S
-Step 5: L (turn left) → 0 1 E
-Step 6: M (move)      → 1 1 E
-Step 7: L (turn left) → 1 1 N
-Step 8: M (move)      → 1 2 N
-Step 9: M (move)      → 1 3 N
-
-Final: 1 3 N ✓
+```bash
+npm test          # Jest tests
 ```
 
+Tests in `test/` directory validate movement calculations and command parsing.
+
+---
+
+## 8. Deployment & Operations
+
+```bash
+npm run build     # tsc compile
+npm start         # Run compiled output
+npm run dev       # nodemon hot-reload
+```
+
+---
+
+## 9. Issues Found
+
+### Logic Bug — Floating-Point Movement
+- **`AxisDegreeUtils.calculateAxis` uses floating-point trig approximation** for grid-based movement. The formula `(axisSideDistance / 90)` produces floats for non-cardinal angles. Since rovers in this kata are grid-aligned (cardinal directions only: 0°, 90°, 180°, 270°), using trig-based approximation is over-engineered and fragile. A simple lookup table or switch/case on the four cardinal directions would be correct, efficient, and deterministic.
+- If a rover somehow ends up at 45° (diagonal), `calculateAxis` would return `0.5` movement — a non-integer grid position, which is invalid for a grid-based problem.
+
+### Missing Validations
+- **No bounds checking** — a rover can move off the plateau (negative coordinates or beyond maxX/maxY). The problem spec requires rovers to stay within bounds.
+- **No collision detection** — two rovers can occupy the same cell.
+- **No input validation** — invalid commands (anything other than L/R/M) are not caught.
+
+### Design Issues
+- **Singleton pattern throughout** (`DegreeCommandService.getInstance()`, `RoverRepository.getInstance()`) makes unit testing difficult — singletons can't be mocked without resetting global state between tests.
+- `RoverRepository` stores state as module-level singleton — parallel test runs or multiple test cases will share state unless explicitly reset.
